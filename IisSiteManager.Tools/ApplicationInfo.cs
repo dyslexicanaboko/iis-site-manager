@@ -8,21 +8,17 @@ namespace IisSiteManager.Tools
 {
     public class ApplicationInfo
     {
-        public const string LOCALHOST = "localhost";
-        private Application _application;
+        public const string Localhost = "localhost";
 
         private readonly Regex _regex = new Regex(@"\d");
-        private Site _site;
 
-        protected ApplicationInfo()
+        internal ApplicationInfo()
         {
+
         }
 
         public ApplicationInfo(Site site, Application application, ApplicationPool applicationPool)
         {
-            _site = site;
-            _application = application;
-
             ApplicationPool = new ApplicationPoolInfo(applicationPool);
 
             Name = GetApplicationName(site, application);
@@ -51,11 +47,9 @@ namespace IisSiteManager.Tools
         {
             var lst = new List<Uri>();
 
-            UriBuilder ub = null;
-
-            foreach (var b in site.Bindings.Where(x => HasPortNumber(x)).ToList())
+            foreach (var b in site.Bindings.Where(HasPortNumber).ToList())
             {
-                ub = new UriBuilder();
+                var ub = new UriBuilder();
                 ub.Scheme = b.Protocol;
                 ub.Host = GetHost(b);
                 ub.Port = GetPort(b);
@@ -69,18 +63,12 @@ namespace IisSiteManager.Tools
 
         private string GetHost(Binding binding)
         {
-            if (!string.IsNullOrWhiteSpace(binding.Host))
-                return binding.Host;
-
-            return LOCALHOST;
+            return !string.IsNullOrWhiteSpace(binding.Host) ? binding.Host : Localhost;
         }
 
         private int GetPort(Binding binding)
         {
-            if (binding.EndPoint != null)
-                return binding.EndPoint.Port;
-
-            return Convert.ToInt32(binding.BindingInformation.Replace(":", string.Empty).Replace("*", string.Empty));
+            return binding.EndPoint?.Port ?? Convert.ToInt32(binding.BindingInformation.Replace(":", string.Empty).Replace("*", string.Empty));
         }
 
         private bool HasPortNumber(Binding binding)

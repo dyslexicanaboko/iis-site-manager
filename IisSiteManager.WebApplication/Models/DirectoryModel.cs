@@ -1,8 +1,8 @@
-﻿using IisSiteManager.Tools;
+﻿using System.Collections.Generic;
+using IisSiteManager.Tools;
 using Microsoft.Web.Administration;
-using System.Collections.Generic;
 
-namespace IisSiteViewerWebApp.Models
+namespace IisSiteManager.WebApplication.Models
 {
     public class DirectoryModel
     {

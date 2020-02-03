@@ -1,7 +1,5 @@
 ﻿using IisSiteManager.Tools;
-using IisSiteViewerWebApp.Models;
-using Microsoft.Web.Administration;
-using System;
+using IisSiteManager.WebApplication.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
@@ -39,7 +37,7 @@ namespace IisSiteManager.WebApplication.Controllers
             //Doing a lambda query was difficult
             if (m.IdentityType.HasValue)
             {
-                IEnumerable<ApplicationInfo> remove = null;
+                IEnumerable<ApplicationInfo> remove;
 
                 if (m.ServiceAccount == null)
                     remove = lst.SelectMany(x =>
@@ -51,11 +49,9 @@ namespace IisSiteManager.WebApplication.Controllers
 
                 var lstRemove = remove.ToList();
 
-                SiteInfo si = null;
-
                 for (var i = lst.Count - 1; i > -1; i--)
                 {
-                    si = lst[i];
+                    var si = lst[i];
 
                     foreach (var a in lstRemove)
                         si.Applications.Remove(a);
@@ -75,18 +71,7 @@ namespace IisSiteManager.WebApplication.Controllers
             return View("Index", model);
         }
 
-        private void GetModelFromFormCollection(FormCollection form)
-        {
-            ProcessModelIdentityType? identityType = null;
-            var it = ProcessModelIdentityType.ApplicationPoolIdentity;
-
-            if (Enum.TryParse(Convert.ToString(form["ddlIdentityType"]), out it))
-                identityType = it;
-
-            var serviceAccount = Convert.ToString(form["ddlServiceAccount"]);
-        }
-
-        private DirectoryModel GetModel(List<SiteInfo> data)
+        private static DirectoryModel GetModel(List<SiteInfo> data)
         {
             return new DirectoryModel {Data = data};
         }
@@ -96,7 +81,7 @@ namespace IisSiteManager.WebApplication.Controllers
             return View(GetModel(GetAllSites()));
         }
 
-        private List<SiteInfo> GetAllSites()
+        private static List<SiteInfo> GetAllSites()
         {
             using (var svc = new IisManagementService())
             {

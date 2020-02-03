@@ -26,17 +26,5 @@ namespace IisSiteManager.Tools
             get => ProcessModel.Password;
             set => ProcessModel.Password = value;
         }
-
-        //public bool Equals(Creds x, Creds y)
-        //{
-        //    return x.Pool == y.Pool
-        //        && x.User == y.User
-        //        && x.Pass == y.Pass;
-        //}
-
-        //public int GetHashCode(Creds obj)
-        //{
-        //    return base.GetHashCode();
-        //}
     }
 }

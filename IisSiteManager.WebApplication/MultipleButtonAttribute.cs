@@ -13,17 +13,15 @@ namespace IisSiteManager.WebApplication
 
         public override bool IsValidName(ControllerContext controllerContext, string actionName, MethodInfo methodInfo)
         {
-            var isValidName = false;
-            var keyValue = string.Format("{0}:{1}", Name, Argument);
+            var keyValue = $"{Name}:{Argument}";
+
             var value = controllerContext.Controller.ValueProvider.GetValue(keyValue);
 
-            if (value != null)
-            {
-                controllerContext.Controller.ControllerContext.RouteData.Values[Name] = Argument;
-                isValidName = true;
-            }
+            if (value == null) return false;
 
-            return isValidName;
+            controllerContext.Controller.ControllerContext.RouteData.Values[Name] = Argument;
+
+            return true;
         }
     }
 }

@@ -3,14 +3,10 @@ using System.Collections.Generic;
 
 namespace IisSiteManager.Tools
 {
-    public class SiteInfo : ApplicationInfo
+    public class SiteInfo 
+        : ApplicationInfo
     {
-        public SiteInfo()
-        {
-            Applications = new List<ApplicationInfo>();
-        }
-
-        public List<ApplicationInfo> Applications { get; set; }
+        public List<ApplicationInfo> Applications { get; set; } = new List<ApplicationInfo>();
 
         public ObjectState State { get; set; }
     }

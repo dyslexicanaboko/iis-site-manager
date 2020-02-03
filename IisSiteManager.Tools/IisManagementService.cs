@@ -3,17 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 //C:\Windows\System32\inetsrv\Microsoft.Web.Administration.dll
 
 namespace IisSiteManager.Tools
 {
     public class IisManagementService : IDisposable
     {
-        public const string DEFAULT_DOCUMENT = "system.webServer/defaultDocument";
+        public const string DefaultDocument = "system.webServer/defaultDocument";
 
         private readonly ServerManager _manager;
-        private Regex _regex = new Regex(@"\d");
 
         public IisManagementService()
         {
@@ -33,7 +31,7 @@ namespace IisSiteManager.Tools
         public List<string> GetDefaultDocuments(Site site)
         {
             var webConfig = site.GetWebConfiguration();
-            var defaultDocumentSection = webConfig.GetSection(DEFAULT_DOCUMENT);
+            var defaultDocumentSection = webConfig.GetSection(DefaultDocument);
             var filesCollection = defaultDocumentSection.GetCollection("files");
 
             //filesCollection[0].GetAttributeValue("value")
@@ -44,12 +42,7 @@ namespace IisSiteManager.Tools
         {
             var sites = GetSites();
 
-            var lst = new List<SiteInfo>();
-
-            foreach (var s in sites)
-                lst.Add(GetSiteInfoFromSite(s));
-
-            return lst;
+            return sites.Select(GetSiteInfoFromSite).ToList();
         }
 
         private bool DoesSitePhysicalPathExist(Site site)
@@ -59,29 +52,24 @@ namespace IisSiteManager.Tools
 
         public SiteInfo GetSiteInfoFromSite(Site site)
         {
-            var lst = new List<SiteInfo>();
-
-            ApplicationPool ap = null;
-
             var obj = new SiteInfo
             {
                 Name = site.Name,
                 State = ObjectState.Started
             };
 
-            if (DoesSitePhysicalPathExist(site))
+            if (!DoesSitePhysicalPathExist(site)) return obj;
+
+            obj.DefaultDocument = GetDefaultDocuments(site)[0]; //I am not sure if this makes sense yet
+
+            foreach (var app in site.Applications)
             {
-                obj.DefaultDocument = GetDefaultDocuments(site)[0]; //I am not sure if this makes sense yet
+                var ap = _manager.ApplicationPools[app.ApplicationPoolName];
 
-                foreach (var app in site.Applications)
+                obj.Applications.Add(new ApplicationInfo(site, app, ap)
                 {
-                    ap = _manager.ApplicationPools[app.ApplicationPoolName];
-
-                    obj.Applications.Add(new ApplicationInfo(site, app, ap)
-                    {
-                        DefaultDocument = GetDefaultDocuments(site)[0] //I am not sure if this makes sense yet
-                    });
-                }
+                    DefaultDocument = GetDefaultDocuments(site)[0] //I am not sure if this makes sense yet
+                });
             }
 
             return obj;
@@ -95,7 +83,7 @@ namespace IisSiteManager.Tools
             if (identityType.HasValue)
                 q = q.Where(x => x.ProcessModel.IdentityType == identityType.Value);
 
-            if (q.Count() == 0)
+            if (!q.Any())
                 throw new ApplicationException(
                     $"No application pools were found for the ProcessModelIdentityType \"{identityType}\".");
 
@@ -103,7 +91,7 @@ namespace IisSiteManager.Tools
             if (!string.IsNullOrWhiteSpace(applicationPoolName))
                 q = q.Where(x => x.Name == applicationPoolName);
 
-            if (q.Count() == 0)
+            if (!q.Any())
                 throw new ApplicationException(
                     $"There are no application pools that match the search criteria: \"{applicationPoolName}\" (Tip: Searches are an exact match).");
 
